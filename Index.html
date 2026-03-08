@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Sign Prompt Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Monoton&family=Montserrat:wght@800&family=Oswald:wght@700&family=Pacifico&family=Yellowtail&family=Courgette&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        h1, h2, h3 { color: #e0e0e0; }
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+        
+        /* Section Styles */
+        .section-box {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        /* Lists & Items */
+        .list-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .item-chip {
+            background-color: #2a2a2a;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid #444;
+            font-size: 16px;
+        }
+        .star-btn {
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 18px;
+            padding: 0;
+            line-height: 1;
+            filter: grayscale(100%);
+            transition: 0.2s;
+        }
+        .item-chip.pinned .star-btn {
+            filter: grayscale(0%);
+        }
+        .copy-btn-small {
+            cursor: pointer;
+            background: #444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 12px;
+        }
+
+        /* Inputs */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+        .input-group label { margin-bottom: 5px; font-weight: bold; }
+        .input-group input {
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background-color: #2a2a2a;
+            color: white;
+            font-size: 16px;
+        }
+
+        /* Buttons & Textarea */
+        .btn-main {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .btn-main:hover { background-color: #45a049; }
+        
+        textarea {
+            width: 100%;
+            height: 300px;
+            background-color: #2a2a2a;
+            color: #00ffcc;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>✨ Neon Sign Prompt Generator</h1>
+
+    <div class="section-box" id="pinned-section" style="border: 2px solid #4CAF50;">
+        <h2>📌 Favorit (Pin)</h2>
+        <div id="pinned-items" class="list-container">
+            <p style="color: #888; font-size: 14px; width: 100%;">Klik bintang di bawah untuk memindahkan warna atau font ke sini.</p>
+        </div>
+    </div>
+
+    <div class="section-box">
+        <h2>🎨 Referensi Warna Neon</h2>
+        <div id="color-list" class="list-container">
+            </div>
+
+        <h2 style="margin-top: 30px;">🔤 Referensi Font Keren</h2>
+        <div id="font-list" class="list-container">
+            </div>
+    </div>
+
+    <div class="section-box">
+        <h2>📝 Input Prompt</h2>
+        <div class="input-group">
+            <label for="inputText">1. Text (Contoh: I'm The Best)</label>
+            <input type="text" id="inputText" placeholder="Masukkan teks neon...">
+        </div>
+        <div class="input-group">
+            <label for="inputColor">2. Color (Contoh: White warm, Ice blue)</label>
+            <input type="text" id="inputColor" placeholder="Masukkan pilihan warna...">
+        </div>
+        <div class="input-group">
+            <label for="inputFont">3. Font Model (Contoh: Pacifico, Bold Sans-Serif)</label>
+            <input type="text" id="inputFont" placeholder="Masukkan jenis font...">
+        </div>
+        <button class="btn-main" onclick="generatePrompt()">Generate Prompt</button>
+    </div>
+
+    <div class="section-box">
+        <h2>🚀 Hasil Prompt</h2>
+        <textarea id="outputPrompt" readonly placeholder="Prompt mu akan muncul di sini..."></textarea>
+        <button class="btn-main" style="background-color: #2196F3; margin-top: 10px;" onclick="copyPrompt()">📋 Copy Prompt</button>
+    </div>
+</div>
+
+<script>
+    // Data Warna Neon
+    const neonColors = [
+        { name: "Warm White", hex: "#FFFDD0" },
+        { name: "Cold White", hex: "#FFFFFF" },
+        { name: "Lemon Yellow", hex: "#FAFA33" },
+        { name: "Golden Yellow", hex: "#FFC000" },
+        { name: "Orange", hex: "#FFA500" },
+        { name: "Red", hex: "#FF0000" },
+        { name: "Pink Soft", hex: "#FFC0CB" },
+        { name: "Hot Pink", hex: "#FF69B4" },
+        { name: "Purple", hex: "#B026FF" },
+        { name: "Ice Blue", hex: "#A5F2F3" },
+        { name: "Deep Blue", hex: "#00008B" },
+        { name: "Neon Green", hex: "#39FF14" }
+    ];
+
+    // Data Font
+    const neonFonts = [
+        { name: "Pacifico", family: "'Pacifico', cursive" },
+        { name: "Monoton", family: "'Monoton', cursive" },
+        { name: "Dancing Script", family: "'Dancing Script', cursive" },
+        { name: "Yellowtail", family: "'Yellowtail', cursive" },
+        { name: "Courgette", family: "'Courgette', cursive" },
+        { name: "Montserrat (Bold)", family: "'Montserrat', sans-serif" },
+        { name: "Oswald (Tall)", family: "'Oswald', sans-serif" }
+    ];
+
+    // Render Data to HTML
+    function createChip(item, type) {
+        const chip = document.createElement('div');
+        chip.className = 'item-chip';
+        chip.id = `chip-${type}-${item.name.replace(/\s+/g, '-')}`;
+        
+        let style = '';
+        if(type === 'color') {
+            style = `color: ${item.hex}; text-shadow: 0 0 5px ${item.hex}; font-weight: bold;`;
+        } else if(type === 'font') {
+            style = `font-family: ${item.family}; font-size: 20px;`;
+        }
+
+        chip.innerHTML = `
+            <button class="star-btn" onclick="togglePin(this, '${chip.id}')">⭐</button>
+            <span style="${style}">${item.name}</span>
+            <button class="copy-btn-small" onclick="copyText('${item.name}')">Copy</button>
+        `;
+        return chip;
+    }
+
+    function initLists() {
+        const colorList = document.getElementById('color-list');
+        neonColors.forEach(color => colorList.appendChild(createChip(color, 'color')));
+
+        const fontList = document.getElementById('font-list');
+        neonFonts.forEach(font => fontList.appendChild(createChip(font, 'font')));
+    }
+
+    // Pinning Logic
+    function togglePin(btn, chipId) {
+        const chip = document.getElementById(chipId);
+        const pinnedSection = document.getElementById('pinned-items');
+        const isPinned = chip.classList.contains('pinned');
+
+        // Hilangkan teks bantuan jika ada item yang di pin
+        const helpText = pinnedSection.querySelector('p');
+        if (helpText) helpText.style.display = 'none';
+
+        if (isPinned) {
+            chip.classList.remove('pinned');
+            // Kembalikan ke tempat asalnya
+            if (chipId.includes('color')) {
+                document.getElementById('color-list').appendChild(chip);
+            } else {
+                document.getElementById('font-list').appendChild(chip);
+            }
+        } else {
+            chip.classList.add('pinned');
+            pinnedSection.appendChild(chip);
+        }
+    }
+
+    // Copy to clipboard helper
+    function copyText(text) {
+        navigator.clipboard.writeText(text);
+        alert(`Disalin: ${text} \n(Silakan paste ke kolom input)`);
+    }
+
+    // Generate Prompt Logic
+    function generatePrompt() {
+        const text = document.getElementById('inputText').value || "I'm The Best";
+        const color = document.getElementById('inputColor').value || "White warm, Pink soft, Ice blue";
+        const font = document.getElementById('inputFont').value || "modern architectural sans-serif or elegant script hybrid";
+
+        const template = `ROLE 
+Act as a professional neon sign designer, typography artist, and commercial product photographer specializing in realistic LED neon flex signage for premium interiors and business branding. 
+
+OBJECTIVE 
+Generate a highly realistic neon sign design that looks visually premium, commercially attractive, and physically manufacturable using real LED neon flex tubing. 
+
+TEXT CONTENT 
+Word / Phrase: "${text}" 
+
+COLOR 
+Neon Colors: "${color}" 
+
+TYPOGRAPHY STYLE 
+* Font Model: ${font}
+* Smooth continuous strokes suitable for LED neon flex bending. 
+* Avoid broken lines, disconnected letters, or extremely thin strokes. 
+* Maintain medium stroke thickness to replicate real neon tubing. 
+* Balanced letter spacing and visually pleasing proportions. 
+* Stylish but readable from a distance. 
+* Slightly stylized but not overly decorative. 
+
+COMPOSITION 
+* Centered layout. 
+* Slight natural curve or gentle flowing baseline for visual interest. 
+* Clean and balanced composition. 
+* Optional minimal underline flourish that remains manufacturable with neon tubing. 
+
+NEON STRUCTURE 
+* Realistic LED neon flex tubing. 
+* Continuous tubing path whenever possible. 
+* Smooth bends rather than sharp corners. 
+* Consistent tube thickness across the entire lettering. 
+
+ACRYLIC BACKING SHAPE 
+The neon sign is mounted on a custom contour-cut transparent acrylic backing panel. 
+Important details: 
+* The acrylic panel follows the outer silhouette of the lettering. 
+* The acrylic extends approximately 3–5 cm beyond the neon tubes as a clean margin. 
+* The edges of the acrylic are smoothly rounded. 
+* The acrylic shape must clearly look custom-cut to match the text shape. 
+* Avoid rectangular or square acrylic boards. 
+
+MOUNTING 
+* Transparent acrylic backing. 
+* Subtle metallic stand-offs or hidden mounting points. 
+* Clean professional installation. 
+* Minimal visible wiring. 
+
+LIGHTING 
+* Realistic LED neon glow. 
+* Subtle volumetric lighting around the tubing. 
+* Natural light falloff. 
+* Gentle light spill interacting with the wall surface. 
+* Soft halo glow around the letters. 
+* Neon tubes remain clearly visible. 
+
+BACKGROUND 
+Keep the environment simple and believable to resemble a real installation. 
+Use one of the following: 
+* plain matte dark wall 
+* neutral gray concrete wall 
+* simple dark painted interior wall 
+Avoid complex interiors or decorative environments. 
+
+VISUAL STYLE 
+Clean modern aesthetic. 
+Premium brand identity feel. 
+Professional commercial signage look. 
+
+RENDERING SETTINGS 
+* Ultra photorealistic neon lighting 
+* High dynamic range 
+* 8k resolution 
+* Sharp focus 
+* Commercial product photography style 
+* Natural shadows and reflections 
+* Square format (1:1 aspect ratio) 
+
+GOAL 
+The final result must look like a real custom neon sign photographed in a realistic setting so customers believe the design can be physically produced and installed in cafes, barbershops, gaming rooms, studios, or modern interior spaces.`;
+
+        document.getElementById('outputPrompt').value = template;
+    }
+
+    // Copy Prompt Button
+    function copyPrompt() {
+        const output = document.getElementById('outputPrompt');
+        if (!output.value) {
+            alert("Silakan klik 'Generate Prompt' terlebih dahulu!");
+            return;
+        }
+        output.select();
+        navigator.clipboard.writeText(output.value);
+        alert("Prompt berhasil disalin! Siap digunakan di AI Image Generator.");
+    }
+
+    // Inisialisasi daftar saat halaman dimuat
+    window.onload = initLists;
+</script>
+
+</body>
+</html>
