@@ -12,39 +12,110 @@
             background-color: #121212;
             color: #ffffff;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            overflow-x: hidden;
         }
-        h1, h2, h3 { color: #e0e0e0; }
+        
+        /* Header & Navigation */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #1e1e1e;
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #e0e0e0;
+        }
+        .menu-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 28px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .menu-btn:hover {
+            color: #4CAF50;
+        }
+
         .container {
-            max-width: 1000px;
-            margin: auto;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
         }
         
         /* Section Styles */
         .section-box {
             background-color: #1e1e1e;
-            padding: 20px;
+            padding: 25px;
             border-radius: 10px;
             margin-bottom: 20px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
 
-        /* Lists & Items */
+        /* Sidebar Styles */
+        #sidebar {
+            position: fixed;
+            top: 0;
+            right: -450px; /* Sembunyi di luar layar */
+            width: 400px;
+            max-width: 100vw;
+            height: 100vh;
+            background-color: #1a1a1a;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.8);
+            transition: right 0.3s ease-in-out;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #sidebar.active {
+            right: 0; /* Muncul ke layar */
+        }
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            color: #ff4c4c;
+            font-size: 24px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Lists & Items (Sidebar) */
         .list-container {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 25px;
         }
         .item-chip {
             background-color: #2a2a2a;
-            padding: 8px 15px;
-            border-radius: 20px;
+            padding: 8px 12px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             gap: 10px;
             border: 1px solid #444;
-            font-size: 16px;
+            font-size: 15px;
+            width: 100%;
+            justify-content: space-between;
+        }
+        .chip-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         .star-btn {
             cursor: pointer;
@@ -65,24 +136,39 @@
             color: white;
             border: none;
             border-radius: 4px;
-            padding: 2px 6px;
+            padding: 4px 8px;
             font-size: 12px;
+            transition: background 0.2s;
+        }
+        .copy-btn-small:hover { background: #666; }
+
+        /* Pinned Area */
+        .pinned-area {
+            background-color: #111;
+            border: 1px dashed #4CAF50;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
         }
 
         /* Inputs */
         .input-group {
             display: flex;
             flex-direction: column;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
-        .input-group label { margin-bottom: 5px; font-weight: bold; }
+        .input-group label { margin-bottom: 8px; font-weight: bold; color: #ccc;}
         .input-group input {
-            padding: 12px;
+            padding: 15px;
             border-radius: 6px;
             border: 1px solid #444;
             background-color: #2a2a2a;
             color: white;
             font-size: 16px;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #4CAF50;
         }
 
         /* Buttons & Textarea */
@@ -96,13 +182,13 @@
             font-size: 16px;
             font-weight: bold;
             width: 100%;
-            margin-bottom: 10px;
+            margin-top: 10px;
         }
         .btn-main:hover { background-color: #45a049; }
         
         textarea {
             width: 100%;
-            height: 300px;
+            height: 350px;
             background-color: #2a2a2a;
             color: #00ffcc;
             border: 1px solid #444;
@@ -112,52 +198,73 @@
             font-size: 14px;
             resize: vertical;
             box-sizing: border-box;
+            margin-bottom: 15px;
         }
+        
+        /* Overlay when sidebar is open */
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 999;
+        }
+        #overlay.active { display: block; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>✨ Neon Sign Prompt Generator</h1>
+<header>
+    <h1>✨ Neon Sign Prompt</h1>
+    <button class="menu-btn" onclick="toggleSidebar()">☰ Referensi</button>
+</header>
 
-    <div class="section-box" id="pinned-section" style="border: 2px solid #4CAF50;">
-        <h2>📌 Favorit (Pin)</h2>
+<div id="overlay" onclick="toggleSidebar()"></div>
+
+<div id="sidebar">
+    <div class="sidebar-header">
+        <h2>Referensi & Favorit</h2>
+        <button class="close-btn" onclick="toggleSidebar()">✖</button>
+    </div>
+
+    <div class="pinned-area" id="pinned-section">
+        <h3 style="margin-top:0; color:#4CAF50;">📌 Pinned Favorites</h3>
         <div id="pinned-items" class="list-container">
-            <p style="color: #888; font-size: 14px; width: 100%;">Klik bintang di bawah untuk memindahkan warna atau font ke sini.</p>
+            <p style="color: #888; font-size: 14px; width: 100%; margin: 0;">Belum ada favorit. Klik ⭐ di bawah.</p>
         </div>
     </div>
 
-    <div class="section-box">
-        <h2>🎨 Referensi Warna Neon</h2>
-        <div id="color-list" class="list-container">
-            </div>
+    <h3>🎨 Warna Neon</h3>
+    <div id="color-list" class="list-container">
+        </div>
 
-        <h2 style="margin-top: 30px;">🔤 Referensi Font Keren</h2>
-        <div id="font-list" class="list-container">
-            </div>
+    <h3>🔤 Font Keren</h3>
+    <div id="font-list" class="list-container">
+        </div>
+</div>
+
+<div class="container">
+    <div class="section-box">
+        <h2 style="margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px;">📝 Setup Desain</h2>
+        <div class="input-group">
+            <label for="inputText">1. Text</label>
+            <input type="text" id="inputText" placeholder="Contoh: I'm The Best">
+        </div>
+        <div class="input-group">
+            <label for="inputColor">2. Color</label>
+            <input type="text" id="inputColor" placeholder="Contoh: White warm, Ice blue">
+        </div>
+        <div class="input-group">
+            <label for="inputFont">3. Font Model</label>
+            <input type="text" id="inputFont" placeholder="Contoh: Pacifico, Bold Sans-Serif">
+        </div>
+        <button class="btn-main" onclick="generatePrompt()">⚡ Generate Prompt</button>
     </div>
 
     <div class="section-box">
-        <h2>📝 Input Prompt</h2>
-        <div class="input-group">
-            <label for="inputText">1. Text (Contoh: I'm The Best)</label>
-            <input type="text" id="inputText" placeholder="Masukkan teks neon...">
-        </div>
-        <div class="input-group">
-            <label for="inputColor">2. Color (Contoh: White warm, Ice blue)</label>
-            <input type="text" id="inputColor" placeholder="Masukkan pilihan warna...">
-        </div>
-        <div class="input-group">
-            <label for="inputFont">3. Font Model (Contoh: Pacifico, Bold Sans-Serif)</label>
-            <input type="text" id="inputFont" placeholder="Masukkan jenis font...">
-        </div>
-        <button class="btn-main" onclick="generatePrompt()">Generate Prompt</button>
-    </div>
-
-    <div class="section-box">
-        <h2>🚀 Hasil Prompt</h2>
+        <h2 style="margin-top: 0;">🚀 Hasil Prompt</h2>
         <textarea id="outputPrompt" readonly placeholder="Prompt mu akan muncul di sini..."></textarea>
-        <button class="btn-main" style="background-color: #2196F3; margin-top: 10px;" onclick="copyPrompt()">📋 Copy Prompt</button>
+        <button class="btn-main" style="background-color: #2196F3;" onclick="copyPrompt()">📋 Copy Prompt</button>
     </div>
 </div>
 
@@ -189,6 +296,12 @@
         { name: "Oswald (Tall)", family: "'Oswald', sans-serif" }
     ];
 
+    // Toggle Sidebar
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('overlay').classList.toggle('active');
+    }
+
     // Render Data to HTML
     function createChip(item, type) {
         const chip = document.createElement('div');
@@ -199,12 +312,14 @@
         if(type === 'color') {
             style = `color: ${item.hex}; text-shadow: 0 0 5px ${item.hex}; font-weight: bold;`;
         } else if(type === 'font') {
-            style = `font-family: ${item.family}; font-size: 20px;`;
+            style = `font-family: ${item.family}; font-size: 18px;`;
         }
 
         chip.innerHTML = `
-            <button class="star-btn" onclick="togglePin(this, '${chip.id}')">⭐</button>
-            <span style="${style}">${item.name}</span>
+            <div class="chip-content">
+                <button class="star-btn" onclick="togglePin(this, '${chip.id}')">⭐</button>
+                <span style="${style}">${item.name}</span>
+            </div>
             <button class="copy-btn-small" onclick="copyText('${item.name}')">Copy</button>
         `;
         return chip;
@@ -230,7 +345,7 @@
 
         if (isPinned) {
             chip.classList.remove('pinned');
-            // Kembalikan ke tempat asalnya
+            // Kembalikan ke tempat asalnya berdasarkan ID
             if (chipId.includes('color')) {
                 document.getElementById('color-list').appendChild(chip);
             } else {
@@ -240,12 +355,17 @@
             chip.classList.add('pinned');
             pinnedSection.appendChild(chip);
         }
+
+        // Tampilkan lagi teks bantuan jika pinned section kosong
+        if (pinnedSection.children.length === 1 && helpText) {
+            helpText.style.display = 'block';
+        }
     }
 
     // Copy to clipboard helper
     function copyText(text) {
         navigator.clipboard.writeText(text);
-        alert(`Disalin: ${text} \n(Silakan paste ke kolom input)`);
+        alert(`Disalin: ${text}`);
     }
 
     // Generate Prompt Logic
@@ -342,12 +462,12 @@ The final result must look like a real custom neon sign photographed in a realis
     function copyPrompt() {
         const output = document.getElementById('outputPrompt');
         if (!output.value) {
-            alert("Silakan klik 'Generate Prompt' terlebih dahulu!");
+            alert("Silakan isi form dan klik 'Generate Prompt' terlebih dahulu!");
             return;
         }
         output.select();
         navigator.clipboard.writeText(output.value);
-        alert("Prompt berhasil disalin! Siap digunakan di AI Image Generator.");
+        alert("Prompt berhasil disalin!");
     }
 
     // Inisialisasi daftar saat halaman dimuat
