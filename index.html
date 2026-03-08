@@ -61,7 +61,7 @@
         #sidebar {
             position: fixed;
             top: 0;
-            right: -450px; /* Sembunyi di luar layar */
+            right: -450px; 
             width: 400px;
             max-width: 100vw;
             height: 100vh;
@@ -73,9 +73,7 @@
             padding: 20px;
             box-sizing: border-box;
         }
-        #sidebar.active {
-            right: 0; /* Muncul ke layar */
-        }
+        #sidebar.active { right: 0; }
         .sidebar-header {
             display: flex;
             justify-content: space-between;
@@ -127,9 +125,7 @@
             filter: grayscale(100%);
             transition: 0.2s;
         }
-        .item-chip.pinned .star-btn {
-            filter: grayscale(0%);
-        }
+        .item-chip.pinned .star-btn { filter: grayscale(0%); }
         .copy-btn-small {
             cursor: pointer;
             background: #444;
@@ -158,20 +154,42 @@
             margin-bottom: 20px;
         }
         .input-group label { margin-bottom: 8px; font-weight: bold; color: #ccc;}
-        .input-group input {
+        .input-group input, .input-group textarea {
             padding: 15px;
             border-radius: 6px;
             border: 1px solid #444;
             background-color: #2a2a2a;
             color: white;
             font-size: 16px;
+            font-family: inherit;
         }
-        .input-group input:focus {
+        .input-group input:focus, .input-group textarea:focus {
             outline: none;
             border-color: #4CAF50;
         }
+        
+        /* Subtle Button & Unique Textarea */
+        .btn-subtle {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 14px;
+            cursor: pointer;
+            text-align: left;
+            padding: 0;
+            margin-top: -10px;
+            margin-bottom: 20px;
+            transition: color 0.2s;
+            display: inline-block;
+        }
+        .btn-subtle:hover { color: #4CAF50; }
+        #inputUnique {
+            height: 80px;
+            resize: vertical;
+            border: 1px dashed #555;
+        }
 
-        /* Buttons & Textarea */
+        /* Buttons & Output Textarea */
         .btn-main {
             background-color: #4CAF50;
             color: white;
@@ -182,11 +200,10 @@
             font-size: 16px;
             font-weight: bold;
             width: 100%;
-            margin-top: 10px;
         }
         .btn-main:hover { background-color: #45a049; }
         
-        textarea {
+        #outputPrompt {
             width: 100%;
             height: 350px;
             background-color: #2a2a2a;
@@ -201,7 +218,7 @@
             margin-bottom: 15px;
         }
         
-        /* Overlay when sidebar is open */
+        /* Overlay */
         #overlay {
             display: none;
             position: fixed;
@@ -235,12 +252,10 @@
     </div>
 
     <h3>🎨 Warna Neon</h3>
-    <div id="color-list" class="list-container">
-        </div>
+    <div id="color-list" class="list-container"></div>
 
     <h3>🔤 Font Keren</h3>
-    <div id="font-list" class="list-container">
-        </div>
+    <div id="font-list" class="list-container"></div>
 </div>
 
 <div class="container">
@@ -258,6 +273,12 @@
             <label for="inputFont">3. Font Model</label>
             <input type="text" id="inputFont" placeholder="Contoh: Pacifico, Bold Sans-Serif">
         </div>
+        
+        <button id="toggleUniqueBtn" class="btn-subtle" onclick="toggleUnique()">+ Tambah Request Unik (Opsional)</button>
+        <div class="input-group" id="uniqueContainer" style="display: none;">
+            <textarea id="inputUnique" placeholder="Contoh: Buat teks seakan membelah siluet gitar listrik yang minimalis..."></textarea>
+        </div>
+
         <button class="btn-main" onclick="generatePrompt()">⚡ Generate Prompt</button>
     </div>
 
@@ -302,11 +323,26 @@
         document.getElementById('overlay').classList.toggle('active');
     }
 
+    // Toggle Unique Request
+    function toggleUnique() {
+        const container = document.getElementById('uniqueContainer');
+        const btn = document.getElementById('toggleUniqueBtn');
+        if (container.style.display === 'none') {
+            container.style.display = 'block';
+            btn.innerText = '− Sembunyikan Request Unik';
+            btn.style.color = '#ff4c4c'; // Berubah agak kemerahan saat terbuka
+        } else {
+            container.style.display = 'none';
+            btn.innerText = '+ Tambah Request Unik (Opsional)';
+            btn.style.color = '#888';
+        }
+    }
+
     // Render Data to HTML
     function createChip(item, type) {
         const chip = document.createElement('div');
         chip.className = 'item-chip';
-        chip.id = `chip-${type}-${item.name.replace(/\s+/g, '-')}`;
+        chip.id = `chip-${type}-${item.name.replace(/\\s+/g, '-')}`;
         
         let style = '';
         if(type === 'color') {
@@ -339,13 +375,11 @@
         const pinnedSection = document.getElementById('pinned-items');
         const isPinned = chip.classList.contains('pinned');
 
-        // Hilangkan teks bantuan jika ada item yang di pin
         const helpText = pinnedSection.querySelector('p');
         if (helpText) helpText.style.display = 'none';
 
         if (isPinned) {
             chip.classList.remove('pinned');
-            // Kembalikan ke tempat asalnya berdasarkan ID
             if (chipId.includes('color')) {
                 document.getElementById('color-list').appendChild(chip);
             } else {
@@ -356,13 +390,11 @@
             pinnedSection.appendChild(chip);
         }
 
-        // Tampilkan lagi teks bantuan jika pinned section kosong
         if (pinnedSection.children.length === 1 && helpText) {
             helpText.style.display = 'block';
         }
     }
 
-    // Copy to clipboard helper
     function copyText(text) {
         navigator.clipboard.writeText(text);
         alert(`Disalin: ${text}`);
@@ -373,6 +405,13 @@
         const text = document.getElementById('inputText').value || "I'm The Best";
         const color = document.getElementById('inputColor').value || "White warm, Pink soft, Ice blue";
         const font = document.getElementById('inputFont').value || "modern architectural sans-serif or elegant script hybrid";
+        const unique = document.getElementById('inputUnique').value.trim();
+
+        // Tambahkan elemen unik jika kolom diisi
+        let uniqueSection = "";
+        if (unique !== "") {
+            uniqueSection = `\nCUSTOM ELEMENT / SHAPE\n* ${unique}\n`;
+        }
 
         const template = `ROLE 
 Act as a professional neon sign designer, typography artist, and commercial product photographer specializing in realistic LED neon flex signage for premium interiors and business branding. 
@@ -394,7 +433,7 @@ TYPOGRAPHY STYLE
 * Balanced letter spacing and visually pleasing proportions. 
 * Stylish but readable from a distance. 
 * Slightly stylized but not overly decorative. 
-
+${uniqueSection}
 COMPOSITION 
 * Centered layout. 
 * Slight natural curve or gentle flowing baseline for visual interest. 
@@ -458,7 +497,6 @@ The final result must look like a real custom neon sign photographed in a realis
         document.getElementById('outputPrompt').value = template;
     }
 
-    // Copy Prompt Button
     function copyPrompt() {
         const output = document.getElementById('outputPrompt');
         if (!output.value) {
@@ -470,7 +508,6 @@ The final result must look like a real custom neon sign photographed in a realis
         alert("Prompt berhasil disalin!");
     }
 
-    // Inisialisasi daftar saat halaman dimuat
     window.onload = initLists;
 </script>
 
